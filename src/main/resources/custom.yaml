@@ -1,0 +1,31 @@
+server:
+  # This is the name following the server:port
+  contextPath: /sentinel-oauth2-server
+  # The port on which the AuthServer will listen
+  port: 8081
+
+# Details about the database server where the oauth DDL and DML was run:
+oauthdb:
+  jdbc:
+    driverClassName: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/oauth2db
+    user: oauth2user
+    pass: password
+
+# Details about the database server User info lives:
+userdb:
+  jdbc:
+    driverClassName: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/customdb
+    user: customuser
+    pass: password
+
+
+# Note the below queries can be any queries so long as the data in the
+# SELECT list and WHERE clause is retained.
+query:
+    # This query returns the username and password, given a username
+    usersByUsername: SELECT username, password, enabled FROM user WHERE username=?
+
+    # This query returns username and authorities, given a username
+    authoritiesByUsername: SELECT username, authority FROM authorities WHERE username=?
