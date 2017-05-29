@@ -1,7 +1,8 @@
 Sentinel Auth Server
 ===
 
-This OAuth2 Authorization Server backed by a configurable RDBMS.
+This is a Spring based OAuth2 Authorization Server implementation,
+backed by a RDBMS.
 
 This implementation can be used to:
 
@@ -13,7 +14,7 @@ The datasources needed for the OAuth db and the db that holds the user
 and role/authorities values can be configured via external config.
 
 
-### Configuration
+### Datasource preperation:
 
 #### DDL:
 Create a db called __oauth2db__ (say) and populate it using the following DDL and DML:
@@ -106,6 +107,9 @@ and
 mvn flyway:migrate@customdb
 
 ```
+
+### Configuration
+
 #### Custom Property File
 Create a custom yaml file with the following properties
 
@@ -164,24 +168,31 @@ POST localhost:8081/sentinel-oauth2-server/oauth/token?grant_type=password&usern
 ```
 The access-token returned in the response can be examined on the [JWT](jwt.io) site
 
+Change the username/password to match the values specified in the above INSERT statements.
 
----
+
+
+## Resource Server
+
+The Authorization Server produces encrypted JWT tokens using a key store
+ as shown below:
 
 #### Generate Key Pair
 
 ```$xslt
-keytool -genkeypair -alias mytest
+keytool -genkeypair -alias sentinel
                     -keyalg RSA
-                    -keypass mypass
-                    -keystore mytest.jks
-                    -storepass mypass
+                    -keypass <shh-super-secret>
+                    -keystore sentinel.jks
+                    -storepass <shh-super-secret>
 ```
 
 #### Export Public Key
 
 ```$xslt
-keytool -list -rfc --keystore mytest.jks | openssl x509 -inform pem -pubkey
+keytool -list -rfc --keystore sentinel.jks | openssl x509 -inform pem -pubkey
 ```
+
 
 #### Public key for Sentinel Oauth2
 
