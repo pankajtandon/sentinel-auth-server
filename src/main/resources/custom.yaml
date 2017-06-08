@@ -29,3 +29,8 @@ query:
 
     # This query returns username and authorities, given a username
     authoritiesByUsername: SELECT username, authority FROM authorities WHERE username=?
+
+
+jwt:
+  # The number of seconds the JWT will expire in
+  expirationInSecs: 360000
