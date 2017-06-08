@@ -147,9 +147,8 @@ query:
     authoritiesByUsername: SELECT username, authority FROM authorities WHERE username=?
 
 jwt:
-  # The number of seconds the JWT will expire in
-  expirationInSecs: 360000
-
+  accessTokenValidityInSeconds: 36000
+  refreshTokenValidityInSeconds: 360000
 ```
 
 

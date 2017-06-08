@@ -2,6 +2,7 @@ package com.nayidisha.sentinel.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -32,6 +33,12 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     @Autowired
     private Environment env;
 
+    @Value("${jwt.accessTokenValidityInSeconds}")
+    private String accessTokenValidityInSeconds;
+
+    @Value("${jwt.refreshTokenValidityInSeconds}")
+    private String refreshTokenValidityInSeconds;
+
     @Autowired
     @Qualifier("authenticationManagerBean")
     private AuthenticationManager authenticationManager;
@@ -59,6 +66,9 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
     public DefaultTokenServices tokenServices() {
         final DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
         defaultTokenServices.setTokenStore(tokenStore());
+        defaultTokenServices.setAccessTokenValiditySeconds(Integer.parseInt(accessTokenValidityInSeconds));
+        defaultTokenServices.setRefreshTokenValiditySeconds(Integer.parseInt(refreshTokenValidityInSeconds));
+        defaultTokenServices.setReuseRefreshToken(false);
         defaultTokenServices.setSupportRefreshToken(true);
         return defaultTokenServices;
     }

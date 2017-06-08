@@ -14,14 +14,19 @@ import java.util.stream.Collectors;
 
 public class CustomTokenEnhancer implements TokenEnhancer {
 
-    @Value("${jwt.expirationInSecs}")
-    private String expirationInSeconds;
+    @Value("${jwt.accessTokenValidityInSeconds}")
+    private String accessTokenValidityInSeconds;
+
+    @Value("${jwt.refreshTokenValidityInSeconds}")
+    private String refreshTokenValidityInSeconds;
 
     @Override
     public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
         final Map<String, Object> additionalInfo = new HashMap<>();
         additionalInfo.put("username", ((User)authentication.getPrincipal()).getUsername());
-        additionalInfo.put("expires_in", expirationInSeconds);
+        additionalInfo.put("access_token_expires_in", accessTokenValidityInSeconds);
+        additionalInfo.put("refresh_token_expires_in", refreshTokenValidityInSeconds);
+
         additionalInfo.put("permissions",
                 authentication.getAuthorities().stream().map(e -> e.getAuthority().toString()).collect(Collectors.toList()));
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
