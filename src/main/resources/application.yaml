@@ -12,3 +12,7 @@ oauthdb:
 logging:
   level:
     org.springframework.security: DEBUG
+
+jwt:
+  # The number of seconds the JWT will expire in
+  expirationInSecs: 360000
