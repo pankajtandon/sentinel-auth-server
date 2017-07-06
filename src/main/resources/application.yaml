@@ -1,5 +1,5 @@
 server:
-  contextPath: /sentinel-oauth2-server
+  contextPath: /sentinel-auth-server
   port: 8081
 
 oauthdb:

@@ -116,7 +116,7 @@ Create a custom yaml file with the following properties
 ```
 server:
   # This is the name following the server:port
-  contextPath: /sentinel-oauth2-server
+  contextPath: /sentinel-auth-server
   # The port on which the AuthServer will listen
   port: 8081
 
@@ -146,6 +146,15 @@ query:
     # This query returns username and authorities, given a username
     authoritiesByUsername: SELECT username, authority FROM authorities WHERE username=?
 
+    # This query can be used to return ANY data from the customdb so long as the following rules are followed:
+    # The SELECT list should contain at least two columns labeled 'key' and 'value'. If other elements  exist in
+    # the SELECT list, they will be ignored.
+    # The WHERE clause MUST be as shown below. The username must be supplied by the caller of the query.
+    additionalInfoQuery: SELECT 'role' key, role_name value FROM USER \
+                         INNER JOIN user_role ON user.id = user_role.user_id \
+                         INNER JOIN role ON user_role.role_id = role.id
+                         WHERE user.username = ?
+
 jwt:
   accessTokenValidityInSeconds: 36000
   refreshTokenValidityInSeconds: 360000
@@ -162,13 +171,13 @@ mvn clean install
 #### Run the Auth Server
 
 ```
-java -jar target/sentinel-oauth2-server.war --spring.config.location=/absolute/path/to/custom.yaml
+java -jar target/sentinel-auth-server.war --spring.config.location=/absolute/path/to/custom.yaml
 ```
 
 #### Generate a JWT token using POSTMAN
 
 ```
-POST localhost:8081/sentinel-oauth2-server/oauth/token?grant_type=password&username=admin&password=password
+POST localhost:8081/sentinel-auth-server/oauth/token?grant_type=password&username=admin&password=password
 ```
 The access-token returned in the response can be examined on the [JWT](jwt.io) site
 
@@ -200,7 +209,7 @@ keytool -list -rfc --keystore sentinel.jks | openssl x509 -inform pem -pubkey
 
 #### Public key for Sentinel Oauth2
 
-Use this public key on the ResourceServer to process the JWT token produced by the sentinel-oauth2-server:
+Use this public key on the ResourceServer to process the JWT token produced by the sentinel-auth-server:
 
 ```$xslt
 -----BEGIN PUBLIC KEY-----

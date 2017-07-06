@@ -1,6 +1,6 @@
 server:
   # This is the name following the server:port
-  contextPath: /sentinel-oauth2-server
+  contextPath: /sentinel-auth-server
   # The port on which the AuthServer will listen
   port: 8081
 
@@ -30,6 +30,14 @@ query:
     # This query returns username and authorities, given a username
     authoritiesByUsername: SELECT username, authority FROM authorities WHERE username=?
 
+    # This query can be used to return ANY data from the customdb so long as the following rules are followed:
+    # The SELECT list should contain at least two columns labeled 'key' and 'value'. If other elements  exist in
+    # the SELECT list, they will be ignored.
+    # The WHERE clause MUST be as shown below. The username must be supplied by the caller of the query.
+    additionalInfoQuery: SELECT 'role' key, role_name value FROM USER \
+                         INNER JOIN user_role ON user.id = user_role.user_id \
+                         INNER JOIN role ON user_role.role_id = role.id
+                         WHERE user.username = ?
 
 jwt:
   accessTokenValidityInSeconds: 36000
