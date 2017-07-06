@@ -143,18 +143,31 @@ query:
     # This query returns the username and password, given a username
     usersByUsername: SELECT username, password, enabled FROM user WHERE username=?
 
+
     # This query returns username and authorities, given a username
-    authoritiesByUsername: SELECT username, authority FROM authorities WHERE username=?
-
+    # Sample:
+    # authoritiesByUsername: SELECT username, authority FROM authorities WHERE username=?
+    #
+    # Note that the first element in this SELECT list below is never used by Spring and can therefore be 'dummied-out'
+    # But it needs to exist so that Spring can access the second argument at index 2.
+    authoritiesByUsername: |
+                 SELECT DISTINCT 'username', permission FROM role_permission rp
+                 WHERE rp.role_id IN
+                       (SELECT role.id
+                        FROM user
+                        INNER JOIN user_role ON user.user_id = user_role.user_id
+                        INNER JOIN role role ON user_role.role_id = role.id WHERE user.user_name = ? )
+                        
+                        
     # This query can be used to return ANY data from the customdb so long as the following rules are followed:
-    # The SELECT list should contain at least two columns labeled 'key' and 'value'. If other elements  exist in
-    # the SELECT list, they will be ignored.
-    # The WHERE clause MUST be as shown below. The username must be supplied by the caller of the query.
-    additionalInfoQuery: SELECT 'role' key, role_name value FROM USER \
-                         INNER JOIN user_role ON user.id = user_role.user_id \
-                         INNER JOIN role ON user_role.role_id = role.id
-                         WHERE user.username = ?
-
+    # The SELECT list should contain at least two columns labeled 'key' and 'value'. If other elements exist in
+    # the SELECT list *after* these two, they will be ignored.
+    # The WHERE clause MUST be as shown below. The username must be supplied by the caller of the query.    
+    additionalInfoQuery: |
+          SELECT 'role' AS 'key' , role.name AS 'value'
+          FROM user
+          INNER JOIN user_role ON user.user_id = user_role.user_id
+          INNER JOIN role role ON user_role.role_id = role.id WHERE user.user_name = ?
 jwt:
   accessTokenValidityInSeconds: 36000
   refreshTokenValidityInSeconds: 360000
