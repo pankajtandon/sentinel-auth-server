@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS user (
     PRIMARY KEY (id)
 );
 
-
+-- To use permissions
 CREATE TABLE IF NOT EXISTS authorities (
     id BIGINT(20) not null auto_increment,
     username VARCHAR(255) not null,
@@ -69,6 +69,24 @@ CREATE TABLE IF NOT EXISTS authorities (
     PRIMARY KEY (id)
 );
 
+-- To use roles
+CREATE TABLE `role` (
+  `id` int(11) NOT NULL,
+  `name` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+CREATE TABLE `user_role` (
+  `user_id` int(11) NOT NULL,
+  `role_id` varchar(45) NOT NULL,
+  PRIMARY KEY (`user_id`,`role_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+CREATE TABLE `role_permission` (
+  `role_id` int(11) NOT NULL,
+  `permission` varchar(45) NOT NULL,
+  PRIMARY KEY (`role_id`,`permission`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
 
 INSERT INTO user (username, password, enabled) VALUES ('admin', 'password', true);
 INSERT INTO user (username, password, enabled) VALUES ('joe', 'password', true);
@@ -91,6 +109,7 @@ INSERT INTO authorities (username, authority) VALUES ('joe', 'DELETE_INVOICE');
 
 INSERT INTO authorities (username, authority) VALUES ('doe', 'MANAGE_PET');
 INSERT INTO authorities (username, authority) VALUES ('doe', 'MANAGE_INVOICE');
+
 ```
 
 
