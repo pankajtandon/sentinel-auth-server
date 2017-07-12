@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS user (
     PRIMARY KEY (id)
 );
 
-
+-- To use permissions
 CREATE TABLE IF NOT EXISTS authorities (
     id BIGINT(20) not null auto_increment,
     username VARCHAR(255) not null,
@@ -69,6 +69,24 @@ CREATE TABLE IF NOT EXISTS authorities (
     PRIMARY KEY (id)
 );
 
+-- To use roles
+CREATE TABLE `role` (
+  `id` int(11) NOT NULL,
+  `name` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `user_role` (
+  `user_id` int(11) NOT NULL,
+  `role_id` varchar(45) NOT NULL,
+  PRIMARY KEY (`user_id`,`role_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `role_permission` (
+  `role_id` int(11) NOT NULL,
+  `permission` varchar(45) NOT NULL,
+  PRIMARY KEY (`role_id`,`permission`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO user (username, password, enabled) VALUES ('admin', 'password', true);
 INSERT INTO user (username, password, enabled) VALUES ('joe', 'password', true);
@@ -91,6 +109,7 @@ INSERT INTO authorities (username, authority) VALUES ('joe', 'DELETE_INVOICE');
 
 INSERT INTO authorities (username, authority) VALUES ('doe', 'MANAGE_PET');
 INSERT INTO authorities (username, authority) VALUES ('doe', 'MANAGE_INVOICE');
+
 ```
 
 
@@ -116,7 +135,7 @@ Create a custom yaml file with the following properties
 ```
 server:
   # This is the name following the server:port
-  contextPath: /sentinel-oauth2-server
+  contextPath: /sentinel-auth-server
   # The port on which the AuthServer will listen
   port: 8081
 
@@ -136,15 +155,36 @@ userdb:
     user: customuser
     pass: password
 
-
 # Note the below queries can be any queries so long as the data in the
 # SELECT list and WHERE clause is retained.
 query:
     # This query returns the username and password, given a username
-    usersByUsername: SELECT username, password, enabled FROM user WHERE username=?
+    usersByUsername: SELECT user_name, password, enabled FROM user WHERE user_name=?
 
     # This query returns username and authorities, given a username
-    authoritiesByUsername: SELECT username, authority FROM authorities WHERE username=?
+    # Sample:
+    # authoritiesByUsername: SELECT username, authority FROM authorities WHERE username=?
+    #
+    # Note that the first element in this SELECT list below is never used by Spring and can therefore be 'dummied-out'
+    # But it needs to exist so that Spring can access the second argument at index 2.
+    authoritiesByUsername: |
+                 SELECT DISTINCT 'username', permission FROM role_permission rp
+                 WHERE rp.role_id IN
+                       (SELECT role.id
+                        FROM user
+                        INNER JOIN user_role ON user.user_id = user_role.user_id
+                        INNER JOIN role role ON user_role.role_id = role.id WHERE user.user_name = ? )
+
+
+    # This query can be used to return ANY data from the customdb so long as the following rules are followed:
+    # The SELECT list should contain at least two columns labeled 'key' and 'value'. If other elements exist in
+    # the SELECT list *after* these two, they will be ignored.
+    # The WHERE clause MUST be as shown below. The username must be supplied by the caller of the query.
+    additionalInfoQuery: |
+          SELECT 'role' AS 'key' , role.name AS 'value'
+          FROM user
+          INNER JOIN user_role ON user.user_id = user_role.user_id
+          INNER JOIN role role ON user_role.role_id = role.id WHERE user.user_name = ?
 
 jwt:
   accessTokenValidityInSeconds: 36000
@@ -162,13 +202,13 @@ mvn clean install
 #### Run the Auth Server
 
 ```
-java -jar target/sentinel-oauth2-server.war --spring.config.location=/absolute/path/to/custom.yaml
+java -jar target/sentinel-auth-server.war --spring.config.location=/absolute/path/to/custom.yaml
 ```
 
 #### Generate a JWT token using POSTMAN
 
 ```
-POST localhost:8081/sentinel-oauth2-server/oauth/token?grant_type=password&username=admin&password=password
+POST localhost:8081/sentinel-auth-server/oauth/token?grant_type=password&username=admin&password=password
 ```
 The access-token returned in the response can be examined on the [JWT](jwt.io) site
 
@@ -200,7 +240,7 @@ keytool -list -rfc --keystore sentinel.jks | openssl x509 -inform pem -pubkey
 
 #### Public key for Sentinel Oauth2
 
-Use this public key on the ResourceServer to process the JWT token produced by the sentinel-oauth2-server:
+Use this public key on the ResourceServer to process the JWT token produced by the sentinel-auth-server:
 
 ```$xslt
 -----BEGIN PUBLIC KEY-----
