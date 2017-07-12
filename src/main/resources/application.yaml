@@ -17,5 +17,4 @@ jwt:
   accessTokenValidityInSeconds: 36000
   refreshTokenValidityInSeconds: 360000
 
-custom:
-  jarsDirectory: ~/myTemp
+userDetailServiceImplementationProvided: false

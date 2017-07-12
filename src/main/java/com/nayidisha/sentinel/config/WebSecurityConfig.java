@@ -1,8 +1,10 @@
 package com.nayidisha.sentinel.config;
 
+import com.nayidisha.sentinel.support.SentinelUserDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -18,22 +20,34 @@ import javax.sql.DataSource;
 
 @Configuration
 @Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements ApplicationContextAware {
 
     @Autowired
     private Environment env;
 
-    @Value("${query.usersByUsername}")
+    @Value("${query.usersByUsername:null}")
     private String usersByUsernameQuery;
 
-    @Value("${query.authoritiesByUsername}")
+    @Value("${query.authoritiesByUsername:null}")
     private String authoritiesByUsername;
+
+    @Value("${userDetailServiceImplementationProvided: false}")
+    private boolean userDetailServiceImplementationProvided;
+
+    @Autowired
+    private SentinelUserDetailService sentinelUserDetailsService;
 
     @Autowired
     public void globalUserDetails(final AuthenticationManagerBuilder auth) throws Exception {
-        auth.jdbcAuthentication().dataSource(customDataSource())
-                .usersByUsernameQuery(usersByUsernameQuery)
-                .authoritiesByUsernameQuery(authoritiesByUsername);
+
+        if (!userDetailServiceImplementationProvided) {
+            auth.jdbcAuthentication().dataSource(customDataSource())
+                    .usersByUsernameQuery(usersByUsernameQuery)
+                    .authoritiesByUsernameQuery(authoritiesByUsername);
+        } else {
+            //UserDetailService provided
+            auth.userDetailsService(sentinelUserDetailsService);
+        }
     }
 
     @Override

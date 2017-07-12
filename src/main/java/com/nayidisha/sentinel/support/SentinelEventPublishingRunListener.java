@@ -16,15 +16,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by pankajt on 7/12/17.
+ * Created by pankaj on 7/12/17.
  */
 public class SentinelEventPublishingRunListener extends EventPublishingRunListener {
 
-    Logger log = LoggerFactory.getLogger(SentinelRunListener.class);
-
-    //@Value("${custom.jarsDirectory}")
-    private String jarsDirectory = "/Users/pankajt/myTemp";
-
+    Logger log = LoggerFactory.getLogger(SentinelEventPublishingRunListener.class);
 
     public SentinelEventPublishingRunListener(SpringApplication application, String[] args) {
         super(application, args);
@@ -33,7 +29,13 @@ public class SentinelEventPublishingRunListener extends EventPublishingRunListen
     @Override
     public void contextPrepared(ConfigurableApplicationContext configurableApplicationContext) {
 
-        System.out.println("J: " + jarsDirectory);
+        String jarsDirectory = configurableApplicationContext.getEnvironment().getProperty("SENTINEL_JAR_DIR");
+
+        if (jarsDirectory == null) {
+            log.info("No SENTINEL_JAR_DIR specified. No custom Jars will be loaded!");
+            return;
+        }
+
         File[] jarFiles = new File(jarsDirectory).listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 return name.endsWith(".jar");
@@ -41,7 +43,7 @@ public class SentinelEventPublishingRunListener extends EventPublishingRunListen
         });
 
         if (jarFiles == null) {
-            log.info("No jar files found. Not loading custom Jars");
+            log.info("No jar files found in SENTINAL_JAR_DIR. Not loading custom Jars");
             return;
         }
         log.info("Jar files found at " + jarsDirectory);
