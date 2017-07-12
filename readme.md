@@ -74,19 +74,19 @@ CREATE TABLE `role` (
   `id` int(11) NOT NULL,
   `name` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `user_role` (
   `user_id` int(11) NOT NULL,
   `role_id` varchar(45) NOT NULL,
   PRIMARY KEY (`user_id`,`role_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `role_permission` (
   `role_id` int(11) NOT NULL,
   `permission` varchar(45) NOT NULL,
   PRIMARY KEY (`role_id`,`permission`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO user (username, password, enabled) VALUES ('admin', 'password', true);
 INSERT INTO user (username, password, enabled) VALUES ('joe', 'password', true);
@@ -155,13 +155,11 @@ userdb:
     user: customuser
     pass: password
 
-
 # Note the below queries can be any queries so long as the data in the
 # SELECT list and WHERE clause is retained.
 query:
     # This query returns the username and password, given a username
-    usersByUsername: SELECT username, password, enabled FROM user WHERE username=?
-
+    usersByUsername: SELECT user_name, password, enabled FROM user WHERE user_name=?
 
     # This query returns username and authorities, given a username
     # Sample:
@@ -176,17 +174,18 @@ query:
                         FROM user
                         INNER JOIN user_role ON user.user_id = user_role.user_id
                         INNER JOIN role role ON user_role.role_id = role.id WHERE user.user_name = ? )
-                        
-                        
+
+
     # This query can be used to return ANY data from the customdb so long as the following rules are followed:
     # The SELECT list should contain at least two columns labeled 'key' and 'value'. If other elements exist in
     # the SELECT list *after* these two, they will be ignored.
-    # The WHERE clause MUST be as shown below. The username must be supplied by the caller of the query.    
+    # The WHERE clause MUST be as shown below. The username must be supplied by the caller of the query.
     additionalInfoQuery: |
           SELECT 'role' AS 'key' , role.name AS 'value'
           FROM user
           INNER JOIN user_role ON user.user_id = user_role.user_id
           INNER JOIN role role ON user_role.role_id = role.id WHERE user.user_name = ?
+
 jwt:
   accessTokenValidityInSeconds: 36000
   refreshTokenValidityInSeconds: 360000
