@@ -36,10 +36,10 @@ query:
     authoritiesByUsername: |
                  SELECT DISTINCT 'username', permission FROM role_permission rp
                  WHERE rp.role_id IN
-                       (SELECT role.id
+                       (SELECT role.role_id
                         FROM user
                         INNER JOIN user_role ON user.user_id = user_role.user_id
-                        INNER JOIN role role ON user_role.role_id = role.id WHERE user.user_name = ? )
+                        INNER JOIN role role ON user_role.role_id = role.role_id WHERE user.user_name = ? )
 
 
     # This query can be used to return ANY data from the customdb so long as the following rules are followed:
@@ -50,7 +50,7 @@ query:
           SELECT 'role' AS 'key' , role.name AS 'value'
           FROM user
           INNER JOIN user_role ON user.user_id = user_role.user_id
-          INNER JOIN role role ON user_role.role_id = role.id WHERE user.user_name = ?
+          INNER JOIN role role ON user_role.role_id = role.role_id WHERE user.user_name = ?
 
 jwt:
   accessTokenValidityInSeconds: 36000
