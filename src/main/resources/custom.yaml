@@ -52,6 +52,11 @@ query:
           INNER JOIN user_role ON user.user_id = user_role.user_id
           INNER JOIN role role ON user_role.role_id = role.role_id WHERE user.user_name = ?
 
+    industrtyQuery: |
+          SELECT 'industry' AS 'key' , user.industry AS 'value'
+          FROM user
+          WHERE user.user_name = ?
+
 jwt:
   accessTokenValidityInSeconds: 36000
   refreshTokenValidityInSeconds: 360000
