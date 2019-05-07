@@ -28,8 +28,8 @@ public class CustomTokenEnhancer implements TokenEnhancer {
     @Value("${query.additionalInfoQuery}")
     private String additionalInfoQuery;
 
-    @Value("${query.industrtyQuery}")
-    private String industrtyQuery;
+    @Value("${query.industryQuery}")
+    private String industryQuery;
     
     @Autowired
     JdbcTemplate jdbcTemplate;
@@ -68,9 +68,9 @@ public class CustomTokenEnhancer implements TokenEnhancer {
     
     private MultiValuedMap<String, String>  getIndustry(String username){
     	MultiValuedMap<String, String> map = new ArrayListValuedHashMap();
-    	if(industrtyQuery != null){
+    	if(industryQuery != null){
     		jdbcTemplate.query(
-    				industrtyQuery, new Object[]{username},
+    				industryQuery, new Object[]{username},
                     (rs, rowNum)
                             -> map.put(rs.getString("key"), rs.getString("value"))
             );
