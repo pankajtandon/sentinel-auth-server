@@ -28,6 +28,9 @@ public class CustomTokenEnhancer implements TokenEnhancer {
     @Value("${query.additionalInfoQuery}")
     private String additionalInfoQuery;
 
+    @Value("${query.industryQuery}")
+    private String industryQuery;
+    
     @Autowired
     JdbcTemplate jdbcTemplate;
 
@@ -43,6 +46,9 @@ public class CustomTokenEnhancer implements TokenEnhancer {
         MultiValuedMap<String, String> mvm = buildMultiMap(username);
         Map<String, Collection<String>> map = mvm.asMap();
         map.forEach((k,v) -> additionalInfo.put(k, v));
+        MultiValuedMap<String, String> industryMap = getIndustry(username);
+        Map<String, Collection<String>> inMap = industryMap.asMap();
+        inMap.forEach((kk,vv) -> additionalInfo.put(kk, vv));
 
         ((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
         return accessToken;
@@ -58,6 +64,18 @@ public class CustomTokenEnhancer implements TokenEnhancer {
             );
         }
         return map;
+    }
+    
+    private MultiValuedMap<String, String>  getIndustry(String username){
+    	MultiValuedMap<String, String> map = new ArrayListValuedHashMap();
+    	if(industryQuery != null){
+    		jdbcTemplate.query(
+    				industryQuery, new Object[]{username},
+                    (rs, rowNum)
+                            -> map.put(rs.getString("key"), rs.getString("value"))
+            );
+    	}
+    	return map;
     }
 
 }
